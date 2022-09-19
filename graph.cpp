@@ -4,11 +4,7 @@
 using namespace std;
 using namespace std::chrono;
 
-class Node {
-    public:
-        int data;
-        Node* next;
-};
+
 
 void graphBuilderMatrix(ifstream& infile) {
 
