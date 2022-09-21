@@ -25,15 +25,16 @@ bool graphBuilderMatrix(ifstream& infile, int numberVertex, int edge , int Verte
 }
 
 
-void graphBuilderLL(int model){
+void graphBuilderLL(bool model, int n){
 	int i,j;
-	int n = 0;
+	
 
 	for(i=0; i < n; i++){
 		for(j = 0; j < n; j++) {
 
 			if (i<j) {
-
+				//colocar "for" e carregar os objetos
+				model[i] = { }
 			}	
 
 		}
@@ -50,14 +51,23 @@ int main() {
 	int Vertex_a, Vertex_b;
 	bool model;
 	ifstream infile("data.txt");
+
 	infile >> numberVertex;
+	bool model[numberVertex];
+
+
 	auto start = high_resolution_clock::now();
+
+
 	model = graphBuilderMatrix(infile, numberVertex, edge, Vertex_a, Vertex_b);
-	graphBuilderLL(model);
+	graphBuilderLL(model, numberVertex);
+
+
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
     	cout << "Time taken by function: "
          << duration.count() << " microseconds" << endl;
 	infile.close();
 	return 0;
+
 }
