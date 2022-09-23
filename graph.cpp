@@ -1,8 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <vector>
 using namespace std;
 using namespace std::chrono;
+
 
 class Node
 {
@@ -20,22 +22,18 @@ bool graphBuilderMatrix(ifstream& infile, int numberVertex, int edge , int Verte
         graph[Vertex_b][Vertex_a] = true;
 		edge++;
 	}
-
 	return graph;
 }
 
-
-void graphBuilderLL(bool model, int n){
-	int i,j;
+void graphBuilderLL(vector<bool> graph, int n, std::vector<vector<bool>> model){
 	
-
-	for(i=0; i < n; i++){
-		for(j = 0; j < n; j++) {
-
-			if (i<j) {
+	for(int i=0; i < n; i++){
+		for(int j = 0; j < n; j++) {
+			
+			if (i<j && model[i][j] == true) {
 				//colocar "for" e carregar os objetos
-				model[i] = { }
-			}	
+				graph[i] = {};
+			}
 
 		}
 
@@ -46,27 +44,25 @@ void graphBuilderLL(bool model, int n){
 
 int main() {
 
-	int numberVertex;
-	int edge=0;
-	int Vertex_a, Vertex_b;
-	bool model;
+	int numberVertex,Vertex_a, Vertex_b, edge=0;
+	vector<bool> model;
 	ifstream infile("data.txt");
-
 	infile >> numberVertex;
-	bool model[numberVertex];
+	model[numberVertex];
 
 
 	auto start = high_resolution_clock::now();
 
 
-	model = graphBuilderMatrix(infile, numberVertex, edge, Vertex_a, Vertex_b);
-	graphBuilderLL(model, numberVertex);
+	std::vector<vector<bool>> u { graphBuilderMatrix(infile, numberVertex, edge, Vertex_a, Vertex_b)};
+	//graphBuilderLL(model, numberVertex, u);
 
 
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
     	cout << "Time taken by function: "
          << duration.count() << " microseconds" << endl;
+
 	infile.close();
 	return 0;
 
