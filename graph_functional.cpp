@@ -10,25 +10,27 @@ using namespace std::chrono;
 
 bool graphBuilderAdjacencyMatrix(ifstream& infile, int numberVertex, int edge , int Vertex_a, int Vertex_b) {
         
-        bool graph[numberVertex][numberVertex] = {false};
+    bool graph[numberVertex][numberVertex] = {false};
             
-        while(infile >> Vertex_a >> Vertex_b) {
-            graph[Vertex_a][Vertex_b] = true;
-            graph[Vertex_b][Vertex_a] = true;
-            edge++;
-        }
+    while(infile >> Vertex_a >> Vertex_b) {
+        graph[Vertex_a][Vertex_b] = true;
+        graph[Vertex_b][Vertex_a] = true;
+        edge++;
+    }
 
-        return graph;
+    return graph;
 }
 
 
 
-void graphBuilderAdjacencyVector(ifstream& infile, int numberVertex, vector<bool>  graphLL[], int Vertex_a, int Vertex_b) {
+bool graphBuilderAdjacencyVector(ifstream& infile, int numberVertex, vector<bool>  graphLL[], int Vertex_a, int Vertex_b) {
             
     while(infile >> Vertex_a >> Vertex_b) {
         graphLL[Vertex_a].push_back(Vertex_b);
         graphLL[Vertex_b].push_back(Vertex_a);
     }
+
+    return graphLL;
     
 }
  
@@ -48,6 +50,7 @@ int main() {
 
 
 	start = clock();
+    
     graphBuilderAdjacencyMatrix(infile, numberVertex, edge, Vertex_a, Vertex_b);
 	graphBuilderAdjacencyVector(infile, numberVertex, graphLL,  Vertex_a, Vertex_b);
 
