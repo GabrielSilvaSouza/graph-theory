@@ -1,8 +1,8 @@
 import queue
 import statistics
 
-def graphInput():
-    with open(r'c:\Users\lucas\Downloads\example.txt') as f:
+def graphInput(file_name):
+    with open(file_name) as f:
         for line in f:
             print(line.strip())
     return
@@ -21,9 +21,9 @@ def graphOutput(graph, representation):
 
     elif representation == 'AdjacencyList':
         rankList = []
-        for i in range(len(graph)):                
+        for i in range(len(graph)):        
             edges += len(graph[i][1])
-            rankList.append(len(graph[i][1]))    
+            rankList.append(len(graph[i][1]))
 
     rankList.sort()
     f.write('numero de vertices'+ str(len(graph))+'\n'
@@ -35,9 +35,9 @@ def graphOutput(graph, representation):
 
     return f
 
-def graphBuilderAdjacencyMatrix():
+def graphBuilderAdjacencyMatrix(file_name):
 
-    with open(r'c:\Users\lucas\Downloads\example.txt') as f:
+    with open(file_name) as f:
         numberVertex = int(f.readline())
         graph = [[False] * numberVertex for i in range(numberVertex)]
         for line in f:
@@ -47,9 +47,9 @@ def graphBuilderAdjacencyMatrix():
 
     return graph
 
-def graphBuilderAdjacencyList():
+def graphBuilderAdjacencyList(file_name):
 
-    with open(r'c:\Users\lucas\Downloads\example.txt') as f:
+    with open(file_name) as f:
         numberVertex = int(f.readline())
         graph = [[i, []] * 1 for i in range(1, numberVertex+1)]
         for line in f:
@@ -68,30 +68,24 @@ def breadthFirstSearch(graph, root, representation):
     Q = queue.Queue()
     labelList[root-1] = 'explored'
     Q.put(root-1)
-    f.write('vertice:'+str(root)+' pai:raiz nivel:0')
-    f.write('\n')
-
-    if representation == 'AdjacencyMatrix':
-        while Q.empty() != True:
-            v = Q.get()
-            for i in range(len(graph[v])):
+    f.write('vertice:'+str(root)+' pai:raiz nivel:0'+'\n')
+    
+    while Q.empty() != True:
+        v = Q.get()
+        for i in range(len(graph[v])):
+            if representation == 'AdjacencyMatrix':
                 if (graph[v][i] == True) and (labelList[i] == 'unknown'):
                     labelList[i] = 'discovered'
-                    levelList[i] = levelList[v]+1 
+                    levelList[i] = levelList[v]+1
                     Q.put(i)
-                    f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i]))
-                    f.write('\n')
+                    f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i])+'\n')
 
-    elif representation == 'AdjacencyList':
-        while Q.empty() != True:
-            v = Q.get()
-            for i in range(len(graph)):
+            elif representation == 'AdjacencyList':
                 if (i+1 in graph[v][1]) and (labelList[i] == 'unknown'):
                     labelList[i] = 'discovered'
                     levelList[i] = levelList[v]+1
                     Q.put(i)
-                    f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i]))
-                    f.write('\n')
+                    f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i])+'\n')
 
     return f
 
@@ -101,8 +95,7 @@ def depthFirstSearch(graph, root, representation):
     labelList = ['unknown'] * len(graph)
     levelList = [0] * len(graph)
     S = [root-1]
-    f.write('vertice:'+str(root)+' pai:raiz nivel:0')
-    f.write('\n')
+    f.write('vertice:'+str(root)+' pai:raiz nivel:0'+'\n')
 
     if representation == 'AdjacencyMatrix':
         while S != []:
@@ -113,8 +106,7 @@ def depthFirstSearch(graph, root, representation):
                     if (graph[v][i] == True):
                         levelList[i] = levelList[v]+1
                         S += [i]
-                        f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i]))
-                        f.write('\n')
+                        f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i])+'\n')
 
     elif representation == 'AdjacencyList':
         while S != []:
@@ -126,39 +118,66 @@ def depthFirstSearch(graph, root, representation):
                         S += [i]
                         if ():
                             levelList[i] = levelList[v]+1
-                            f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i]))
-                            f.write('\n')
+                            f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i])+'\n')
 
     return f
 
-def getDistance(graph, root, destination, representation):
+def findDistance(graph, root, destiny, representation):
 
     labelList = ['unknown'] * len(graph)
     levelList = [0] * len(graph)
-    Q = []
-    labelList[root] = 'explored'
-    Q.append(graph[root].head.vertex)         
+    Q = queue.Queue()
+    labelList[root-1] = 'explored'
+    Q.put(root-1)
 
-    if representation == 'AdjacencyList':
-        c = 0
-        while len(Q) != 0:
-            v = Q.pop()
-            for i in range(1,len(graph)):
-                while graph[i].head.sucessor:
-                    if i == root:
-                        if (labelList[graph[i].head.sucessor.vertex] == 'unknown'):
-                            labelList[graph[i].head.sucessor.vertex] = 'discovered'
-                            levelList[graph[i].head.sucessor.vertex] = levelList[v]+1
-                            Q.append(graph[i])
-                        else:
-                            break
+    if representation == 'AdjacencyMatrix':
+        while Q.empty() != True:
+            v = Q.get()
+            for i in range(len(graph[v])):
+                if (graph[v][i] == True) and (labelList[i] == 'unknown'):
+                    labelList[i] = 'discovered'
+                    levelList[i] = levelList[v]+1
+                    Q.put(i)
 
-    print(levelList)                   
+    elif representation == 'AdjacencyList':
+        while Q.empty() != True:
+            v = Q.get()
+            for i in range(len(graph)):
+                if (i+1 in graph[v][1]) and (labelList[i] == 'unknown'):
+                    labelList[i] = 'discovered'
+                    levelList[i] = levelList[v]+1
+                    Q.put(i)
 
-    return None   
+    try:
+        distance = levelList[destiny-1]-1
+    except:
+        distance = -1
+    if distance == -1: return -1
+    else: return distance
 
-def findDiameter():
-    return
+def findDiameter(graph, representation):
+
+    diameter = -1
+
+    if representation == 'AdjacencyMatrix':
+        for i in range(len(graph)):
+            for j in range(i, len(graph)):
+                if i == j:
+                    ''
+                else: 
+                    tempDistance = findDistance(graph, i, j, 'AdjacencyMatrix')
+                    if  tempDistance > diameter: diameter = tempDistance
+
+    elif representation == 'AdjacencyList':
+        for i in range(len(graph)):
+            for j in range(i, len(graph)):
+                if i == j:
+                    ''
+                else: 
+                    tempDistance = findDistance(graph, i, j, 'AdjacencyList')
+                    if  tempDistance > diameter: diameter = tempDistance
+
+    return diameter
 
 def findConnectedComponent(graph, representation):
 
