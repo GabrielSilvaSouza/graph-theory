@@ -1,4 +1,5 @@
 import queue
+import statistics
 
 def graphInput():
     with open(r'c:\Users\lucas\Downloads\example.txt') as f:
@@ -6,8 +7,33 @@ def graphInput():
             print(line.strip())
     return
 
-def graphOutput():
-    return
+def graphOutput(graph, representation):
+
+    f = open('output.txt', 'w')
+    edges = 0
+    if representation == 'AdjacencyMatrix':
+        rankList = [0] * len(graph)
+        for i in range(len(graph)):
+            for j in range(len(graph[i])):
+                if graph[i][j] == True:
+                    edges += 1
+                    rankList[i] += 1
+
+    elif representation == 'AdjacencyList':
+        rankList = []
+        for i in range(len(graph)):                
+            edges += len(graph[i][1])
+            rankList.append(len(graph[i][1]))    
+
+    rankList.sort()
+    f.write('numero de vertices'+ str(len(graph))+'\n'
+            +'numero de arestas'+ str(edges//2)+'\n'
+            +'grau minimo'+ str(rankList[0])+'\n'
+            +'grau maximo'+ str(rankList[len(rankList)-1])+'\n'
+            +'grau medio' +str(statistics.mean(rankList))+'\n'
+            +'grau mediano'+ str(statistics.median(rankList))+'\n')
+
+    return f
 
 def graphBuilderAdjacencyMatrix():
 
@@ -105,15 +131,71 @@ def depthFirstSearch(graph, root, representation):
 
     return f
 
-def findDistance():
-    return
+def getDistance(graph, root, destination, representation):
+
+    labelList = ['unknown'] * len(graph)
+    levelList = [0] * len(graph)
+    Q = []
+    labelList[root] = 'explored'
+    Q.append(graph[root].head.vertex)         
+
+    if representation == 'AdjacencyList':
+        c = 0
+        while len(Q) != 0:
+            v = Q.pop()
+            for i in range(1,len(graph)):
+                while graph[i].head.sucessor:
+                    if i == root:
+                        if (labelList[graph[i].head.sucessor.vertex] == 'unknown'):
+                            labelList[graph[i].head.sucessor.vertex] = 'discovered'
+                            levelList[graph[i].head.sucessor.vertex] = levelList[v]+1
+                            Q.append(graph[i])
+                        else:
+                            break
+
+    print(levelList)                   
+
+    return None   
 
 def findDiameter():
     return
 
-def findConnectedComponent():
-    return
+def findConnectedComponent(graph, representation):
 
-test = graphBuilderAdjacencyMatrix()
-print(test)
-depthFirstSearch(test, 1, 'AdjacencyMatrix')
+    labelList = ['unknown'] * len(graph)
+    levelList = [0] * len(graph)
+    Q = queue.Queue()
+    connectedComponentElementsList = []
+
+    while ('unknown' in labelList):
+
+        nextVertex = labelList.index('unknown')
+        labelList[nextVertex] = 'explored'
+        Q.put(nextVertex)
+        connectedComponentElementsList.append([nextVertex+1])
+        if representation == 'AdjacencyMatrix':
+            while Q.empty() != True:
+                v = Q.get()
+                for i in range(len(graph[v])):
+                    if (graph[v][i] == True) and (labelList[i] == 'unknown'):
+                        labelList[i] = 'discovered'
+                        levelList[i] = levelList[v]+1 
+                        Q.put(i)
+                        connectedComponentElementsList[len(connectedComponentElementsList)-1].append(i+1)
+
+        elif representation == 'AdjacencyList':
+            while Q.empty() != True:
+                v = Q.get()
+                for i in range(len(graph)):
+                    if (i+1 in graph[v][1]) and (labelList[i] == 'unknown'):
+                        labelList[i] = 'discovered'
+                        levelList[i] = levelList[v]+1
+                        Q.put(i)
+                        connectedComponentElementsList[len(connectedComponentElementsList)-1].append(i+1)
+
+    connectedComponentElementsList.sort(key=len)
+    connectedComponentLengthList = []
+    for i in range(len(connectedComponentElementsList)):
+        connectedComponentLengthList.append(len(connectedComponentElementsList[i]))
+
+    return (len(connectedComponentElementsList), connectedComponentLengthList, connectedComponentElementsList)
