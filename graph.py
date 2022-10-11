@@ -72,7 +72,7 @@ def breadthFirstSearch(graph, root, representation):
     
     while Q.empty() != True:
         v = Q.get()
-        for i in range(len(graph[v])):
+        for i in range(len(graph)):
             if representation == 'AdjacencyMatrix':
                 if (graph[v][i] == True) and (labelList[i] == 'unknown'):
                     labelList[i] = 'discovered'
