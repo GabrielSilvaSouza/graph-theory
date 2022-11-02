@@ -1,220 +1,223 @@
 import queue
 import statistics
 
-def graphInput(file_name):
-    with open(file_name) as f:
-        for line in f:
-            print(line.strip())
-    return
+def graph_input(file_name):
 
-def graphOutput(graph, representation):
+    with open(file_name) as file_input:
+        for line in file_input:
+            file_output = line.strip()
 
-    f = open('output.txt', 'w')
+    return file_output
+
+def graph_output(graph, representation):
+
+    file_output = open('output.txt', 'w')
     edges = 0
-    if representation == 'AdjacencyMatrix':
-        rankList = [0] * len(graph)
-        for i in range(len(graph)):
-            for j in range(len(graph[i])):
-                if graph[i][j] == True:
+
+    if representation == 'adjacency_matrix':
+        rank_list = [0] * len(graph)
+        for vertex in range(len(graph)):
+            for neighboring_vertex in range(len(graph[vertex])):
+                if graph[vertex][neighboring_vertex] == True:
                     edges += 1
-                    rankList[i] += 1
+                    rank_list[vertex] += 1
 
-    elif representation == 'AdjacencyList':
-        rankList = []
-        for i in range(len(graph)):        
-            edges += len(graph[i][1])
-            rankList.append(len(graph[i][1]))
+    elif representation == 'adjacency_list':
+        rank_list = []
+        for vertex in range(len(graph)):
+            edges += len(graph[vertex][1])
+            rank_list.append(len(graph[vertex][1]))
 
-    rankList.sort()
-    f.write('numero de vertices'+ str(len(graph))+'\n'
+    rank_list.sort()
+    file_output.write('numero de vertices'+ str(len(graph))+'\n'
             +'numero de arestas'+ str(edges//2)+'\n'
-            +'grau minimo'+ str(rankList[0])+'\n'
-            +'grau maximo'+ str(rankList[len(rankList)-1])+'\n'
-            +'grau medio' +str(statistics.mean(rankList))+'\n'
-            +'grau mediano'+ str(statistics.median(rankList))+'\n')
+            +'grau minimo'+ str(rank_list[0])+'\n'
+            +'grau maximo'+ str(rank_list[len(rank_list)-1])+'\n'
+            +'grau medio' +str(statistics.mean(rank_list))+'\n'
+            +'grau mediano'+ str(statistics.median(rank_list))+'\n')
 
-    return f
+    return file_output
 
-def graphBuilderAdjacencyMatrix(file_name):
+def graph_builder_adjacency_matrix(file_name):
 
-    with open(file_name) as f:
-        numberVertex = int(f.readline())
-        graph = [[False] * numberVertex for i in range(numberVertex)]
-        for line in f:
+    with open(file_name) as file_input:
+        number_vertex = int(file_input.readline())
+        graph = [[False] * number_vertex for vertex in range(number_vertex)]
+        for line in file_input:
             vertex_a, vertex_b = line.split()
             vertex_a, vertex_b = int(vertex_a)-1, int(vertex_b)-1
             graph[vertex_a][vertex_b] = graph[vertex_b][vertex_a] = True
 
     return graph
 
-def graphBuilderAdjacencyList(file_name):
+def graph_builder_adjacency_list(file_name):
 
-    with open(file_name) as f:
-        numberVertex = int(f.readline())
-        graph = [[i, []] * 1 for i in range(1, numberVertex+1)]
-        for line in f:
-            vertex_a, vertex_b = line.split()
-            vertex_a, vertex_b = int(vertex_a)-1, int(vertex_b)-1
-            graph[vertex_a][1] += [vertex_b+1]
-            graph[vertex_b][1] += [vertex_a+1]
+    with open(file_name) as file_input:
+        number_vertex = int(file_input.readline())
+        graph = [[i, []] * 1 for i in range(1, number_vertex+1)]
+        for line in file_input:
+            vertex, neighboring_vertex = line.split()
+            vertex, neighboring_vertex = int(vertex)-1, int(neighboring_vertex)-1
+            graph[vertex][1] += [neighboring_vertex+1]
+            graph[neighboring_vertex][1] += [vertex+1]
 
     return graph
 
-def breadthFirstSearch(graph, root, representation):
+def breadth_first_search(graph, root, representation):
 
-    f = open('BFSoutput.txt', 'w')
-    labelList = ['unknown'] * len(graph)
-    levelList = [0] * len(graph)
-    Q = queue.Queue()
-    labelList[root-1] = 'explored'
-    Q.put(root-1)
-    f.write('vertice:'+str(root)+' pai:raiz nivel:0'+'\n')
+    file_output = open('BFS_output.txt', 'w')
+    label_list = ['unknown'] * len(graph)
+    level_list = [0] * len(graph)
+    exploration_queue = queue.Queue()
+    label_list[root-1] = 'explored'
+    exploration_queue.put(root-1)
+    file_output.write('vertice:'+str(root)+' pai:raiz nivel:0'+'\n')
     
-    while Q.empty() != True:
-        v = Q.get()
-        for i in range(len(graph)):
-            if representation == 'AdjacencyMatrix':
-                if (graph[v][i] == True) and (labelList[i] == 'unknown'):
-                    labelList[i] = 'discovered'
-                    levelList[i] = levelList[v]+1
-                    Q.put(i)
-                    f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i])+'\n')
+    while exploration_queue.empty() != True:
+        vertex = exploration_queue.get()
+        for neighboring_vertex in range(len(graph)):
+            if representation == 'adjacency_matrix':
+                if (graph[vertex][neighboring_vertex] == True) and (label_list[neighboring_vertex] == 'unknown'):
+                    label_list[neighboring_vertex] = 'discovered'
+                    level_list[neighboring_vertex] = level_list[vertex]+1
+                    exploration_queue.put(neighboring_vertex)
+                    file_output.write('vertice:'+str(neighboring_vertex+1)+' pai:'+str(vertex+1)+' nivel:'+str(level_list[neighboring_vertex])+'\n')
 
-            elif representation == 'AdjacencyList':
-                if (i+1 in graph[v][1]) and (labelList[i] == 'unknown'):
-                    labelList[i] = 'discovered'
-                    levelList[i] = levelList[v]+1
-                    Q.put(i)
-                    f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i])+'\n')
+            elif representation == 'adjacency_list':
+                if (neighboring_vertex+1 in graph[vertex][1]) and (label_list[neighboring_vertex] == 'unknown'):
+                    label_list[neighboring_vertex] = 'discovered'
+                    level_list[neighboring_vertex] = level_list[vertex]+1
+                    exploration_queue.put(neighboring_vertex)
+                    file_output.write('vertice:'+str(neighboring_vertex+1)+' pai:'+str(vertex+1)+' nivel:'+str(level_list[neighboring_vertex])+'\n')
 
-    return f
+    return file_output
 
-def depthFirstSearch(graph, root, representation):
+def depth_first_search(graph, root, representation):
 
-    f = open('DFSoutput.txt', 'w')
-    labelList = ['unknown'] * len(graph)
-    levelList = [0] * len(graph)
-    S = [root-1]
-    f.write('vertice:'+str(root)+' pai:raiz nivel:0'+'\n')
+    file_output = open('DFS_output.txt', 'w')
+    label_list = ['unknown'] * len(graph)
+    level_list = [0] * len(graph)
+    exploration_stack = [root-1]
+    file_output.write('vertice:'+str(root)+' pai:raiz nivel:0'+'\n')
 
-    if representation == 'AdjacencyMatrix':
-        while S != []:
-            v = S.pop()
-            if (labelList[v] != 'discovered'):
-                labelList[v] = 'discovered'
-                for i in range(len(graph[v])):
-                    if (graph[v][i] == True):
-                        levelList[i] = levelList[v]+1
-                        S += [i]
-                        f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i])+'\n')
+    if representation == 'adjacency_matrix':
+        while exploration_stack != []:
+            vertex = exploration_stack.pop()
+            if (label_list[vertex] != 'discovered'):
+                label_list[vertex] = 'discovered'
+                for neighboring_vertex in range(len(graph[vertex])):
+                    if (graph[vertex][neighboring_vertex] == True):
+                        level_list[neighboring_vertex] = level_list[vertex]+1
+                        exploration_stack += [neighboring_vertex]
+                        file_output.write('vertice:'+str(neighboring_vertex+1)+' pai:'+str(neighboring_vertex+1)+' nivel:'+str(level_list[neighboring_vertex])+'\n')
 
-    elif representation == 'AdjacencyList':
-        while S != []:
-            v = S.pop()
-            if (labelList[v] != 'discovered'):
-                labelList[v] = 'discovered'
-                for i in range(len(graph)):
-                    if (i+1 in graph[v][1]):
-                        S += [i]
-                        if ():
-                            levelList[i] = levelList[v]+1
-                            f.write('vertice:'+str(i+1)+' pai:'+str(v+1)+' nivel:'+str(levelList[i])+'\n')
+    elif representation == 'adjacency_list':
+        while exploration_stack != []:
+            vertex = exploration_stack.pop()
+            if (label_list[vertex] != 'discovered'):
+                label_list[vertex] = 'discovered'
+                for neighboring_vertex in range(len(graph)):
+                    if (neighboring_vertex+1 in graph[vertex][1]):
+                        level_list[neighboring_vertex] = level_list[vertex]+1
+                        exploration_stack += [neighboring_vertex]
+                        file_output.write('vertice:'+str(neighboring_vertex+1)+' pai:'+str(vertex+1)+' nivel:'+str(level_list[neighboring_vertex])+'\n')
 
-    return f
+    return file_output
 
-def findDistance(graph, root, destiny, representation):
+def get_distance(graph, root, destiny, representation):
 
-    labelList = ['unknown'] * len(graph)
-    levelList = [0] * len(graph)
-    Q = queue.Queue()
-    labelList[root-1] = 'explored'
-    Q.put(root-1)
+    label_list = ['unknown'] * len(graph)
+    level_list = [0] * len(graph)
+    exploration_queue = queue.Queue()
+    label_list[root-1] = 'explored'
+    exploration_queue.put(root-1)
 
-    if representation == 'AdjacencyMatrix':
-        while Q.empty() != True:
-            v = Q.get()
-            for i in range(len(graph[v])):
-                if (graph[v][i] == True) and (labelList[i] == 'unknown'):
-                    labelList[i] = 'discovered'
-                    levelList[i] = levelList[v]+1
-                    Q.put(i)
+    if representation == 'adjacency_matrix':
+        while exploration_queue.empty() != True:
+            vertex = exploration_queue.get()
+            for neighboring_vertex in range(len(graph[vertex])):
+                if (graph[vertex][neighboring_vertex] == True) and (label_list[neighboring_vertex] == 'unknown'):
+                    label_list[neighboring_vertex] = 'discovered'
+                    level_list[neighboring_vertex] = level_list[vertex]+1
+                    exploration_queue.put(neighboring_vertex)
 
-    elif representation == 'AdjacencyList':
-        while Q.empty() != True:
-            v = Q.get()
-            for i in range(len(graph)):
-                if (i+1 in graph[v][1]) and (labelList[i] == 'unknown'):
-                    labelList[i] = 'discovered'
-                    levelList[i] = levelList[v]+1
-                    Q.put(i)
+    elif representation == 'adjacency_list':
+        while exploration_queue.empty() != True:
+            vertex = exploration_queue.get()
+            for neighboring_vertex in range(len(graph)):
+                if (neighboring_vertex+1 in graph[vertex][1]) and (label_list[neighboring_vertex] == 'unknown'):
+                    label_list[neighboring_vertex] = 'discovered'
+                    level_list[neighboring_vertex] = level_list[vertex]+1
+                    exploration_queue.put(neighboring_vertex)
 
     try:
-        distance = levelList[destiny-1]-1
+        distance = level_list[destiny-1]-1
     except:
         distance = -1
+    
     if distance == -1: return -1
     else: return distance
 
-def findDiameter(graph, representation):
+def get_diameter(graph, representation):
 
     diameter = -1
 
-    if representation == 'AdjacencyMatrix':
-        for i in range(len(graph)):
-            for j in range(i, len(graph)):
-                if i == j:
-                    ''
+    if representation == 'adjacency_matrix':
+        for vertex in range(len(graph)):
+            for neighboring_vertex in range(vertex, len(graph)):
+                if vertex == neighboring_vertex:
+                    pass
                 else: 
-                    tempDistance = findDistance(graph, i, j, 'AdjacencyMatrix')
-                    if  tempDistance > diameter: diameter = tempDistance
+                    temporary_distance = get_distance(graph, vertex, neighboring_vertex, 'adjacency_matrix')
+                    if temporary_distance > diameter: diameter = temporary_distance
 
-    elif representation == 'AdjacencyList':
-        for i in range(len(graph)):
-            for j in range(i, len(graph)):
-                if i == j:
-                    ''
+    elif representation == 'adjacency_list':
+        for vertex in range(len(graph)):
+            for neighboring_vertex in range(vertex, len(graph)):
+                if vertex == neighboring_vertex:
+                    pass
                 else: 
-                    tempDistance = findDistance(graph, i, j, 'AdjacencyList')
-                    if  tempDistance > diameter: diameter = tempDistance
+                    temporary_distance = get_distance(graph, vertex, neighboring_vertex, 'adjacency_list')
+                    if  temporary_distance > diameter: diameter = temporary_distance
 
     return diameter
 
-def findConnectedComponent(graph, representation):
+def get_connected_component(graph, representation):
 
-    labelList = ['unknown'] * len(graph)
-    levelList = [0] * len(graph)
-    Q = queue.Queue()
-    connectedComponentElementsList = []
+    label_list = ['unknown'] * len(graph)
+    level_list = [0] * len(graph)
+    exploration_queue = queue.Queue()
+    connected_component_elements_list = []
 
-    while ('unknown' in labelList):
+    while ('unknown' in label_list):
 
-        nextVertex = labelList.index('unknown')
-        labelList[nextVertex] = 'explored'
-        Q.put(nextVertex)
-        connectedComponentElementsList.append([nextVertex+1])
-        if representation == 'AdjacencyMatrix':
-            while Q.empty() != True:
-                v = Q.get()
-                for i in range(len(graph[v])):
-                    if (graph[v][i] == True) and (labelList[i] == 'unknown'):
-                        labelList[i] = 'discovered'
-                        levelList[i] = levelList[v]+1 
-                        Q.put(i)
-                        connectedComponentElementsList[len(connectedComponentElementsList)-1].append(i+1)
+        next_vertex = label_list.index('unknown')
+        label_list[next_vertex] = 'explored'
+        exploration_queue.put(next_vertex)
+        connected_component_elements_list.append([next_vertex+1])
 
-        elif representation == 'AdjacencyList':
-            while Q.empty() != True:
-                v = Q.get()
-                for i in range(len(graph)):
-                    if (i+1 in graph[v][1]) and (labelList[i] == 'unknown'):
-                        labelList[i] = 'discovered'
-                        levelList[i] = levelList[v]+1
-                        Q.put(i)
-                        connectedComponentElementsList[len(connectedComponentElementsList)-1].append(i+1)
+        if representation == 'adjacency_matrix':
+            while exploration_queue.empty() != True:
+                vertex = exploration_queue.get()
+                for neighboring_vertex in range(len(graph[vertex])):
+                    if (graph[vertex][neighboring_vertex] == True) and (label_list[neighboring_vertex] == 'unknown'):
+                        label_list[neighboring_vertex] = 'discovered'
+                        level_list[neighboring_vertex] = level_list[vertex]+1 
+                        exploration_queue.put(neighboring_vertex)
+                        connected_component_elements_list[len(connected_component_elements_list)-1].append(neighboring_vertex+1)
 
-    connectedComponentElementsList.sort(key=len)
-    connectedComponentLengthList = []
-    for i in range(len(connectedComponentElementsList)):
-        connectedComponentLengthList.append(len(connectedComponentElementsList[i]))
+        elif representation == 'adjacency_list':
+            while exploration_queue.empty() != True:
+                vertex = exploration_queue.get()
+                for neighboring_vertex in range(len(graph)):
+                    if (neighboring_vertex+1 in graph[vertex][1]) and (label_list[neighboring_vertex] == 'unknown'):
+                        label_list[neighboring_vertex] = 'discovered'
+                        level_list[neighboring_vertex] = level_list[vertex]+1
+                        exploration_queue.put(neighboring_vertex)
+                        connected_component_elements_list[len(connected_component_elements_list)-1].append(neighboring_vertex+1)
 
-    return (len(connectedComponentElementsList), connectedComponentLengthList, connectedComponentElementsList)
+    connected_component_elements_list.sort(key=len)
+    connected_component_length_list = []
+    for neighboring_vertex in range(len(connected_component_elements_list)): connected_component_length_list.append(len(connected_component_elements_list[neighboring_vertex]))
+
+    return (len(connected_component_elements_list), connected_component_length_list, connected_component_elements_list)
