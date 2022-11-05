@@ -38,9 +38,7 @@ class Linked_List {
         Node_Linked_List* head_linked_list;
         int size_linked_list;
 
-        Linked_List() {
-            head_linked_list = NULL;
-        }
+        Linked_List() {head_linked_list = NULL;}
     
         void insert(int);
         void insert(int, float);
@@ -82,10 +80,17 @@ class Prioriy_Queue {
 
 };
 
+class Node_Binary_Heap {
+
+    public:
+        float estimative_edge_weight;
+        int id_vertex;
+};
+
 class Binary_Heap {
     
     public:
-        float *heap_array;
+        Node_Binary_Heap *heap_array;
         int currrent_heap_size;
         int maximum_heap_size;
 
@@ -94,22 +99,22 @@ class Binary_Heap {
         int right_child(int i) {return (2*i + 2);}
 
         Binary_Heap(int);
-        void swap(float*, float*);
-        void heapify(float);
+        void swap(Node_Binary_Heap*, Node_Binary_Heap*);
+        void heapify(int);
         void insert(float, int);
-        void pop(float);
+        int pop();
 };
 
 Binary_Heap::Binary_Heap(int maximum) {
 
     currrent_heap_size = 0;
     maximum_heap_size = maximum;
-    heap_array = new float[maximum];
+    heap_array = new Node_Binary_Heap[maximum];
 }
 
-void Binary_Heap::swap(float *x, float *y) {
+void Binary_Heap::swap(Node_Binary_Heap *x, Node_Binary_Heap *y) {
 
-    int temp = *x;
+    Node_Binary_Heap temp = *x;
     *x = *y;
     *y = temp;
 }
@@ -121,13 +126,14 @@ void Binary_Heap::insert(float key, int value) {
         return;
     }
 
-    int i = currrent_heap_size;
+    int position = currrent_heap_size;
     currrent_heap_size++;
-    heap_array[i] = key;
+    heap_array[position].estimative_edge_weight = key;
+    heap_array[position].id_vertex = value;
   
-    while (i != 0 && heap_array[parent(i)] > heap_array[i]) {
-       swap(&heap_array[i], &heap_array[parent(i)]);
-       i = parent(i);
+    while ((position != 0) && (heap_array[parent(position)].estimative_edge_weight > heap_array[position].estimative_edge_weight)) {
+       swap(&heap_array[position], &heap_array[parent(position)]);
+       position = parent(position);
     }
 }
 
@@ -151,9 +157,23 @@ void Binary_Heap::heapify(int position) {
         if (new_root != position) {
             heap_array[position], heap_array[new_root] = heap_array[new_root], heap_array[position];
             position = new_root;
-        }
-        else {done = true;}
+        } else {done = true;}
     }
+}
+
+int Binary_Heap::pop() {
+    if (currrent_heap_size <= 0) {return -1;}
+    if (currrent_heap_size == 1) {
+        currrent_heap_size--;
+        return heap_array[0].id_vertex;
+    }
+    
+    int root = heap_array[0].id_vertex;
+    heap_array[0] = heap_array[currrent_heap_size-1];
+    currrent_heap_size--;
+    heapify(0);
+
+    return root;
 }
 
 class Graph {
@@ -161,6 +181,7 @@ class Graph {
     public:
         int number_vertex;
         vector<Linked_List> graph_representation;
+        int *auxiliar_heap_array;
 
         void graph_builder_adjacency_list(string);
         float get_distance();
