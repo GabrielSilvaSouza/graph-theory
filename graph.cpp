@@ -83,8 +83,53 @@ class Prioriy_Queue {
 };
 
 class Binary_Heap {
+    
+    public:
+        float *heap_array;
+        int currrent_heap_size;
+        int maximum_heap_size;
 
+        int parent(int i) {return (i-1)/2;}
+        int left_child(int i) {return (2*i + 1);}
+        int right_child(int i) {return (2*i + 2);}
+
+        Binary_Heap(int);
+        void swap(float*, float*);
+        void heapify(float);
+        void insert(float, int);
+        void pop(float);
 };
+
+Binary_Heap::Binary_Heap(int maximum) {
+
+    currrent_heap_size = 0;
+    maximum_heap_size = maximum;
+    heap_array = new float[maximum];
+}
+
+void Binary_Heap::swap(float *x, float *y) {
+
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void Binary_Heap::insert(float key, int value) {
+
+    if (currrent_heap_size == maximum_heap_size) {
+        cout << "\nOverflow: Could not insert key\n";
+        return;
+    }
+
+    int i = currrent_heap_size;
+    currrent_heap_size++;
+    heap_array[i] = key;
+  
+    while (i != 0 && heap_array[parent(i)] > heap_array[i]) {
+       swap(&heap_array[i], &heap_array[parent(i)]);
+       i = parent(i);
+    }
+}
 
 class Graph {
 
