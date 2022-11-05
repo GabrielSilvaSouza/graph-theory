@@ -131,6 +131,31 @@ void Binary_Heap::insert(float key, int value) {
     }
 }
 
+void Binary_Heap::heapify(int position) {
+
+    bool done = false;
+    int new_root = 0;
+
+    while(!done) {
+
+        new_root = position;
+
+        if ((left_child(position) < currrent_heap_size) && (heap_array[left_child(position)] < heap_array[position])) {
+            new_root = left_child(position);
+        } else {
+            new_root = position;
+        }
+        if ((right_child(position) < currrent_heap_size) && (heap_array[right_child(position)] < heap_array[new_root])) {
+            new_root = right_child(position);
+        }
+        if (new_root != position) {
+            heap_array[position], heap_array[new_root] = heap_array[new_root], heap_array[position];
+            position = new_root;
+        }
+        else {done = true;}
+    }
+}
+
 class Graph {
 
     public:
