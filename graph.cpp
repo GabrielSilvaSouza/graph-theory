@@ -8,28 +8,28 @@ using namespace std;
 class Node_Linked_List {
 
     public:
-        int data;
+        int data_int;
         Node_Linked_List* next_node;
-        float edge_weight;
+        float data_float;
 
         Node_Linked_List() {
-            data = 0;
+            data_int = 0;
             next_node = NULL;
         }
 
-        Node_Linked_List(int data) {
-            this->data = data;
+        Node_Linked_List(int data_int) {
+            this->data_int = data_int;
             this->next_node = NULL;
         }
 
         Node_Linked_List(int, float);
 };
 
-Node_Linked_List::Node_Linked_List(int data, float new_edge_weight) {
+Node_Linked_List::Node_Linked_List(int new_data_int, float new_data_float) {
     
-    this->data = data;
+    this->data_int = new_data_int;
     this->next_node = NULL;
-    edge_weight = new_edge_weight;
+    data_float = new_data_float;
 }
 
 class Linked_List {
@@ -45,17 +45,17 @@ class Linked_List {
         void print_linked_list();
 };
 
-void Linked_List::insert(int data) {
+void Linked_List::insert(int data_int) {
 
-    Node_Linked_List* new_node = new Node_Linked_List(data);
+    Node_Linked_List* new_node = new Node_Linked_List(data_int);
     new_node->next_node = head_linked_list;
     this->head_linked_list = new_node;
     size_linked_list += 1;
 }
 
-void Linked_List::insert(int data, float edge_weight) {
+void Linked_List::insert(int data_int, float data_float) {
 
-    Node_Linked_List* new_node = new Node_Linked_List(data, edge_weight);
+    Node_Linked_List* new_node = new Node_Linked_List(data_int, data_float);
     new_node->next_node = head_linked_list;
     this->head_linked_list = new_node;
     size_linked_list += 1;
@@ -71,7 +71,7 @@ void Linked_List::print_linked_list() {
     }
 
     while (temporary != NULL) {
-        cout << temporary->data << " ";
+        cout << temporary->data_int << " ";
         temporary = temporary->next_node;
     }
 }
@@ -83,8 +83,8 @@ class Prioriy_Queue {
 class Node_Binary_Heap {
 
     public:
-        float estimative_edge_weight;
-        int id_vertex;
+        float data_float;
+        int data_int;
 };
 
 class Binary_Heap {
@@ -128,10 +128,10 @@ void Binary_Heap::insert(float key, int value) {
 
     int position = currrent_heap_size;
     currrent_heap_size++;
-    heap_array[position].estimative_edge_weight = key;
-    heap_array[position].id_vertex = value;
+    heap_array[position].data_float = key;
+    heap_array[position].data_int = value;
   
-    while ((position != 0) && (heap_array[parent(position)].estimative_edge_weight > heap_array[position].estimative_edge_weight)) {
+    while ((position != 0) && (heap_array[parent(position)].data_float > heap_array[position].data_float)) {
        swap(&heap_array[position], &heap_array[parent(position)]);
        position = parent(position);
     }
@@ -146,12 +146,12 @@ void Binary_Heap::heapify(int position) {
 
         new_root = position;
 
-        if ((left_child(position) < currrent_heap_size) && (heap_array[left_child(position)] < heap_array[position])) {
+        if ((left_child(position) < currrent_heap_size) && (heap_array[left_child(position)].data_float < heap_array[position].data_float)) {
             new_root = left_child(position);
         } else {
             new_root = position;
         }
-        if ((right_child(position) < currrent_heap_size) && (heap_array[right_child(position)] < heap_array[new_root])) {
+        if ((right_child(position) < currrent_heap_size) && (heap_array[right_child(position)].data_float < heap_array[new_root].data_float)) {
             new_root = right_child(position);
         }
         if (new_root != position) {
@@ -165,10 +165,10 @@ int Binary_Heap::pop() {
     if (currrent_heap_size <= 0) {return -1;}
     if (currrent_heap_size == 1) {
         currrent_heap_size--;
-        return heap_array[0].id_vertex;
+        return heap_array[0].data_int;
     }
     
-    int root = heap_array[0].id_vertex;
+    int root = heap_array[0].data_int;
     heap_array[0] = heap_array[currrent_heap_size-1];
     currrent_heap_size--;
     heapify(0);
@@ -190,15 +190,15 @@ class Graph {
         void minimum_spanning_tree();
 };
 
-void Graph::graph_builder_adjacency_list(string file_name) {
+void Graph::graph_builder_adjacency_list(string file_name) { // O(n+m)
 
     int number_vertex, vertex_v, neighboring_vertex_v;
     float edge_weight;
     ifstream infile(file_name);
     infile >> number_vertex;
-    graph_representation.resize(number_vertex);
+    graph_representation.resize(number_vertex); // O(n)
 
-    while(infile >> vertex_v >> neighboring_vertex_v >> edge_weight) {
+    while(infile >> vertex_v >> neighboring_vertex_v >> edge_weight) { // O(m)
         graph_representation[vertex_v-1].insert(neighboring_vertex_v, edge_weight);
         graph_representation[neighboring_vertex_v-1].insert(vertex_v, edge_weight);
     }
@@ -226,7 +226,7 @@ void Graph::dijkstra_algorithm(int start_vertex) {
     
     for (int i = 0; i < graph_representation[start_vertex].size_linked_list; i++) {
         Node_Linked_List* temporary = graph_representation[start_vertex].head_linked_list;
-        distance_vector[temporary->data] = temporary->edge_weight;
+        distance_vector[temporary->data_int] = temporary->data_float;
         temporary = temporary->next_node;
     }
 
@@ -248,8 +248,12 @@ void Graph::minimum_spanning_tree() {
 int main() {
 
     Graph graph_test;
-
-    graph_test.graph_builder_adjacency_list("grafo_W_5_1.txt");
-    
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
+    graph_test.graph_builder_adjacency_list("grafo_W_5_1.txt"); // 5*10**6
+    end = clock();
+    cpu_time_used = ((double) (end-start)) / CLOCKS_PER_SEC;
+    cout << "\n" << "Tempo gasto: " << cpu_time_used;
     return 0;
 }
