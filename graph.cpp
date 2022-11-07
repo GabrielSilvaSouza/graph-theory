@@ -16,7 +16,7 @@ class Node_Linked_List {
         Node_Linked_List(int, float);
 };
 
-Node_Linked_List::Node_Linked_List(int new_data_int = 0, float new_data_float = 0.0) { // O(1)
+Node_Linked_List::Node_Linked_List(int new_data_int = -1, float new_data_float = -1.0) { // O(1)
     
     this->data_int = new_data_int;
     this->data_float = new_data_float;
@@ -29,14 +29,15 @@ class Linked_List {
         Node_Linked_List* head_linked_list;
         int size_linked_list;
 
-        Linked_List() {
-            head_linked_list = NULL;
-            size_linked_list = 0;
-        }
-
+        Linked_List();
         void insert(int, float);
         void print_linked_list();
 };
+
+Linked_List::Linked_List() {
+    head_linked_list = NULL;
+    size_linked_list = 0;
+}
 
 void Linked_List::insert(int new_data_int = 0, float new_data_float = 0.0) { // O(1)
 
@@ -46,33 +47,25 @@ void Linked_List::insert(int new_data_int = 0, float new_data_float = 0.0) { // 
     size_linked_list += 1;
 }
 
-void Linked_List::print_linked_list() {
-
-    Node_Linked_List* temporary = head_linked_list;
-
-    if (head_linked_list == NULL) {
-        cout << "List empty" << endl;
-        return;
-    }
-
-    while (temporary != NULL) { 
-        cout << temporary->data_int << " ";
-        temporary = temporary->next_node;
-    }
-}
-
 class Node_Binary_Heap {
 
     public:
         float data_float;
         int data_int;
+        Node_Binary_Heap(int, float);
 };
+
+Node_Binary_Heap::Node_Binary_Heap(int new_data_int = -1, float new_data_float = -1.0) {
+
+    this->data_int = new_data_int;
+    this->data_float = new_data_float;
+}
 
 class Binary_Heap {
     
     public:
-        Node_Binary_Heap *heap_array;
-        vector<Node_Binary_Heap *> auxiliar_pointers;
+        vector<Node_Binary_Heap> heap_array;
+        vector<Node_Binary_Heap*> auxiliar_pointers;
         int currrent_heap_size;
         int maximum_heap_size;
 
@@ -81,7 +74,8 @@ class Binary_Heap {
         int right_child(int i) {return (2*i + 2);}
 
         Binary_Heap(int);
-        void swap(Node_Binary_Heap*, Node_Binary_Heap*);
+        void swap_heap_array(Node_Binary_Heap*, Node_Binary_Heap*);
+        void swap_auxiliar_pointers(Node_Binary_Heap*&, Node_Binary_Heap*&);
         void heapify(int);
         void insert(float, int);
         int pop();
@@ -91,15 +85,22 @@ Binary_Heap::Binary_Heap(int new_maximum) { // O(1)
 
     currrent_heap_size = 0;
     maximum_heap_size = new_maximum;
-    heap_array = new Node_Binary_Heap[new_maximum];
-    vector<Node_Binary_Heap *> auxiliar_pointers(new_maximum);
+    heap_array.resize(new_maximum);
+    auxiliar_pointers.resize(new_maximum);
 }
 
-void Binary_Heap::swap(Node_Binary_Heap *x, Node_Binary_Heap *y) { // O(1)
+void Binary_Heap::swap_heap_array(Node_Binary_Heap *x, Node_Binary_Heap *y) { // O(1)
 
     Node_Binary_Heap temp = *x;
     *x = *y;
     *y = temp;
+}
+
+void Binary_Heap::swap_auxiliar_pointers(Node_Binary_Heap *&x, Node_Binary_Heap *&y) { // O(1)
+
+    Node_Binary_Heap* temp = x;
+    x = y;
+    y = temp;
 }
 
 void Binary_Heap::insert(float key, int value) { // O(log V)
@@ -116,8 +117,8 @@ void Binary_Heap::insert(float key, int value) { // O(log V)
     auxiliar_pointers[value] = &heap_array[index];
 
     while ((index != 0) && (heap_array[parent(index)].data_float > heap_array[index].data_float)) {
-        swap(&heap_array[index], &heap_array[parent(index)]);
-        swap(auxiliar_pointers[index], auxiliar_pointers[parent(index)]);
+        swap_heap_array(&heap_array[index], &heap_array[parent(index)]);
+        swap_auxiliar_pointers(auxiliar_pointers[index], auxiliar_pointers[parent(index)]);
         index = parent(index);
     }
 }
@@ -138,8 +139,8 @@ void Binary_Heap::heapify(int index = 0) { // O(V)
             new_root = right_child(index);
         }
         if (new_root != index) {
-            swap(&heap_array[index], &heap_array[new_root]);
-            swap(auxiliar_pointers[index], auxiliar_pointers[new_root]);
+            swap_heap_array(&heap_array[new_root], &heap_array[index]);
+            swap_auxiliar_pointers(auxiliar_pointers[new_root], auxiliar_pointers[index]);
             index = new_root;
         } else {done = true;}
     }
@@ -156,6 +157,7 @@ int Binary_Heap::pop() { // O(1)
     int root = heap_array[0].data_int;
     heap_array[0] = heap_array[currrent_heap_size-1];
     currrent_heap_size--;
+    auxiliar_pointers[root] = NULL;
     heapify();
 
     return root;
@@ -166,15 +168,20 @@ class Graph {
     public:
         int number_vertex;
         vector<Linked_List> graph_representation;
-        int *auxiliar_heap_array;
+        vector<int> parent;
 
+        Graph();
         void graph_builder_adjacency_list(string, bool);
         void dijkstra_algorithm(int);
 };
 
+Graph::Graph() {
+    number_vertex = 0;
+}
+
 void Graph::graph_builder_adjacency_list(string file_name, bool graph_weight = false) { // O(n+m)
 
-    int number_vertex, vertex_v, neighboring_vertex_v;
+    int vertex_v, neighboring_vertex_v;
     float edge_weight;
     ifstream infile(file_name);
     infile >> number_vertex;
@@ -199,53 +206,58 @@ void Graph::dijkstra_algorithm(int start_vertex) { // O((V+E)*log V)
     
     vector<float> distance_vector(number_vertex, numeric_limits<float>::infinity());
     Linked_List explored_set;
-    distance_vector[start_vertex-1] = 0;
+    distance_vector[start_vertex-1] = 0.0;
     Binary_Heap not_explored_set(number_vertex);
+    Node_Linked_List* neighboring_vertex;
     not_explored_set.insert(0.0, start_vertex);
+    float zero = 0.0;
     int exploring_vertex;
-    cout << "aqui";
-
+    
     while(explored_set.size_linked_list != number_vertex) {
         
         exploring_vertex = not_explored_set.pop();
         explored_set.insert(exploring_vertex);
+        neighboring_vertex = graph_representation[exploring_vertex-1].head_linked_list;
 
-        for (int i = 0; i < graph_representation[exploring_vertex].size_linked_list; i++) {
-            
-            Node_Linked_List* neighboring_vertex = graph_representation[exploring_vertex-1].head_linked_list;
+        for (int i = 0; i < graph_representation[exploring_vertex-1].size_linked_list; i++) {
 
-            if (neighboring_vertex->data_float < 0) {
+            if (neighboring_vertex->data_float < zero) {
                 cout << "The library still doesn't implement shortest paths with negative weights.";
             }
-
+            
             else if (distance_vector[neighboring_vertex->data_int-1] > distance_vector[exploring_vertex-1] + neighboring_vertex->data_float) {
                 
                 distance_vector[neighboring_vertex->data_int-1] = distance_vector[exploring_vertex-1] + neighboring_vertex->data_float;
-                if (not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1] == NULL) {
-                    not_explored_set.insert(distance_vector[neighboring_vertex->data_int-1], neighboring_vertex->data_int);
-                } else {
+                if (not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1] != NULL) {
                     not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1]->data_float = distance_vector[exploring_vertex-1] + neighboring_vertex->data_float;
-                    not_explored_set.heapify(distance(not_explored_set.heap_array, not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1]));
+                    not_explored_set.heapify(&*not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1] - &not_explored_set.heap_array[0]);
+                } else if (not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1] == NULL) {
+                    not_explored_set.insert(distance_vector[neighboring_vertex->data_int-1], neighboring_vertex->data_int);
                 }
             }
-
             neighboring_vertex = neighboring_vertex->next_node;
         }
     }
 
     int count = 0;
-    for (const auto& final_distance: distance_vector) {
-        cout << count+1 << " " << final_distance << endl;
+    for(const auto& i: distance_vector) {
+        cout << count+1 << " " << i << endl;
         count++;
     }
-    cout << count;
 }
 
 int main() {
 
     Graph test;
-    test.graph_builder_adjacency_list("grafo_1.txt");
+    test.graph_builder_adjacency_list("grafo_W_1_1.txt", true);
+
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
     test.dijkstra_algorithm(1);
+    end = clock();
+    cpu_time_used = ((double) (end-start)) / CLOCKS_PER_SEC;
+    cout << "Tempo gasto: " << cpu_time_used << '\n';
 
     return 0;
 }
