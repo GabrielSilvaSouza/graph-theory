@@ -16,7 +16,7 @@ class Node_Linked_List {
         Node_Linked_List(int, float);
 };
 
-Node_Linked_List::Node_Linked_List(int new_data_int = -1, float new_data_float = -1.0) { // O(1)
+Node_Linked_List::Node_Linked_List(int new_data_int = -1, float new_data_float = -1.0f) { // O(1)
     
     this->data_int = new_data_int;
     this->data_float = new_data_float;
@@ -39,7 +39,7 @@ Linked_List::Linked_List() {
     size_linked_list = 0;
 }
 
-void Linked_List::insert(int new_data_int = 0, float new_data_float = 0.0) { // O(1)
+void Linked_List::insert(int new_data_int = -1, float new_data_float = -1.0f) { // O(1)
 
     Node_Linked_List* new_node = new Node_Linked_List(new_data_int, new_data_float);
     new_node->next_node = head_linked_list;
@@ -55,7 +55,7 @@ class Node_Binary_Heap {
         Node_Binary_Heap(int, float);
 };
 
-Node_Binary_Heap::Node_Binary_Heap(int new_data_int = -1, float new_data_float = -1.0) {
+Node_Binary_Heap::Node_Binary_Heap(int new_data_int = -1, float new_data_float = -1.0f) {
 
     this->data_int = new_data_int;
     this->data_float = new_data_float;
@@ -114,9 +114,9 @@ void Binary_Heap::insert(float key, int value) { // O(log V)
     currrent_heap_size++;
     heap_array[index].data_float = key;
     heap_array[index].data_int = value;
-    auxiliar_pointers[value] = &heap_array[index];
+    auxiliar_pointers[value-1] = &heap_array[index];
 
-    while ((index != 0) && (heap_array[parent(index)].data_float > heap_array[index].data_float)) {
+    while ((index != 0) && (heap_array[parent(index)].data_float > heap_array[index].data_float) && (heap_array[index].data_float > 0.0)) {
         swap_heap_array(&heap_array[index], &heap_array[parent(index)]);
         swap_auxiliar_pointers(auxiliar_pointers[index], auxiliar_pointers[parent(index)]);
         index = parent(index);
@@ -157,7 +157,7 @@ int Binary_Heap::pop() { // O(1)
     int root = heap_array[0].data_int;
     heap_array[0] = heap_array[currrent_heap_size-1];
     currrent_heap_size--;
-    auxiliar_pointers[root] = NULL;
+    auxiliar_pointers[root] = nullptr;
     heapify();
 
     return root;
@@ -172,7 +172,8 @@ class Graph {
 
         Graph();
         void graph_builder_adjacency_list(string, bool);
-        void dijkstra_algorithm(int);
+        void dijkstra_heap(int);
+        void dijkstra_vector(int);
 };
 
 Graph::Graph() {
@@ -202,46 +203,105 @@ void Graph::graph_builder_adjacency_list(string file_name, bool graph_weight = f
     infile.close();
 }
 
-void Graph::dijkstra_algorithm(int start_vertex) { // O((V+E)*log V)
+void Graph::dijkstra_vector(int start_vertex) {
     
     vector<float> distance_vector(number_vertex, numeric_limits<float>::infinity());
     Linked_List explored_set;
-    distance_vector[start_vertex-1] = 0.0;
-    Binary_Heap not_explored_set(number_vertex);
+    vector<Node_Linked_List> discovered_set;
+    vector<Node_Linked_List*> auxiliar_pointers (number_vertex, nullptr);
     Node_Linked_List* neighboring_vertex;
-    not_explored_set.insert(0.0, start_vertex);
-    float zero = 0.0;
-    int exploring_vertex;
+    int exploring_vertex, index_min;
+
+    distance_vector[start_vertex-1] = 0.0f;
+    discovered_set.push_back(Node_Linked_List(start_vertex, distance_vector[start_vertex-1]));
+    auxiliar_pointers[start_vertex-1] = &discovered_set[discovered_set.size()-1];
     
     while(explored_set.size_linked_list != number_vertex) {
+
+        index_min = 0;
         
-        exploring_vertex = not_explored_set.pop();
+        for (int i = 0; i < discovered_set.size(); i++) {
+            if (auxiliar_pointers[index_min]->data_float > auxiliar_pointers[i]->data_float) {
+                index_min = i;
+            }
+        }
+        
+        
+        exploring_vertex = discovered_set[index_min].data_int;
         explored_set.insert(exploring_vertex);
+        discovered_set.erase(discovered_set.begin()+index_min);
+        auxiliar_pointers[index_min] = nullptr;
         neighboring_vertex = graph_representation[exploring_vertex-1].head_linked_list;
-
+        
         for (int i = 0; i < graph_representation[exploring_vertex-1].size_linked_list; i++) {
-
-            if (neighboring_vertex->data_float < zero) {
+            
+            if (neighboring_vertex->data_float < 0.0f) {
                 cout << "The library still doesn't implement shortest paths with negative weights.";
+                return;
             }
             
             else if (distance_vector[neighboring_vertex->data_int-1] > distance_vector[exploring_vertex-1] + neighboring_vertex->data_float) {
                 
                 distance_vector[neighboring_vertex->data_int-1] = distance_vector[exploring_vertex-1] + neighboring_vertex->data_float;
-                if (not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1] != NULL) {
-                    not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1]->data_float = distance_vector[exploring_vertex-1] + neighboring_vertex->data_float;
-                    not_explored_set.heapify(&*not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1] - &not_explored_set.heap_array[0]);
-                } else if (not_explored_set.auxiliar_pointers[neighboring_vertex->data_int-1] == NULL) {
-                    not_explored_set.insert(distance_vector[neighboring_vertex->data_int-1], neighboring_vertex->data_int);
+                if (auxiliar_pointers[neighboring_vertex->data_int-1] == nullptr) {
+                    discovered_set.push_back(Node_Linked_List(neighboring_vertex->data_int, distance_vector[neighboring_vertex->data_int-1]));
+                    auxiliar_pointers[neighboring_vertex->data_int-1] = &discovered_set[discovered_set.size()-1];
+                } else {
+                    auxiliar_pointers[neighboring_vertex->data_int-1]->data_float = distance_vector[exploring_vertex-1] + neighboring_vertex->data_float;
                 }
             }
             neighboring_vertex = neighboring_vertex->next_node;
         }
     }
+    
+    int count = 1;
 
-    int count = 0;
     for(const auto& i: distance_vector) {
-        cout << count+1 << " " << i << endl;
+        cout << "(" << count << ", " << i << ")  ";
+        count++;
+    }
+}
+
+void Graph::dijkstra_heap(int start_vertex) { // O((V+E)*log V)
+    
+    vector<float> distance_vector(number_vertex, numeric_limits<float>::infinity());
+    Linked_List explored_set;
+    distance_vector[start_vertex-1] = 0.0f;
+    Binary_Heap discovered_set(number_vertex);
+    Node_Linked_List* neighboring_vertex;
+    discovered_set.insert(0.0f, start_vertex);
+    int exploring_vertex;
+    
+    while(explored_set.size_linked_list != number_vertex) {
+        
+        exploring_vertex = discovered_set.pop();
+        explored_set.insert(exploring_vertex);
+        neighboring_vertex = graph_representation[exploring_vertex-1].head_linked_list;
+
+        for (int i = 0; i < graph_representation[exploring_vertex-1].size_linked_list; i++) {
+
+            if (neighboring_vertex->data_float < 0.0f) {
+                cout << "The library still doesn't implement shortest paths with negative weights.";
+                return;
+            }
+            
+            else if (distance_vector[neighboring_vertex->data_int-1] > distance_vector[exploring_vertex-1] + neighboring_vertex->data_float) {
+                
+                distance_vector[neighboring_vertex->data_int-1] = distance_vector[exploring_vertex-1] + neighboring_vertex->data_float;
+                if (discovered_set.auxiliar_pointers[neighboring_vertex->data_int-1] == nullptr) {
+                    discovered_set.insert(distance_vector[neighboring_vertex->data_int-1], neighboring_vertex->data_int);
+                } else {
+                    discovered_set.auxiliar_pointers[neighboring_vertex->data_int-1]->data_float = distance_vector[exploring_vertex-1] + neighboring_vertex->data_float;
+                    discovered_set.heapify(&*discovered_set.auxiliar_pointers[neighboring_vertex->data_int-1] - &discovered_set.heap_array[0]);
+                }
+            }
+            neighboring_vertex = neighboring_vertex->next_node;
+        }
+    }
+    
+    int count = 1;
+    for(const auto& i: distance_vector) {
+        cout << "(" << count << ", " << i << ")  ";
         count++;
     }
 }
@@ -254,7 +314,7 @@ int main() {
     clock_t start, end;
     double cpu_time_used;
     start = clock();
-    test.dijkstra_algorithm(1);
+    test.dijkstra_vector(1);
     end = clock();
     cpu_time_used = ((double) (end-start)) / CLOCKS_PER_SEC;
     cout << "Tempo gasto: " << cpu_time_used << '\n';
