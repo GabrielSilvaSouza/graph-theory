@@ -1,19 +1,5 @@
 #include <iostream>
-
-class NodeBinaryHeap {
-
-    public:
-        float key;
-        int value;
-
-        NodeBinaryHeap(int, float);
-};
-
-NodeBinaryHeap::NodeBinaryHeap(int new_key = 0, float new_value = 0.0f) { // O(1)
-
-    this->key = new_key;
-    this->value = new_value;
-}
+#include "NodeBinaryHeap.hpp"
 
 class BinaryHeap {
     
@@ -32,6 +18,7 @@ class BinaryHeap {
         void heapify_down(int);
         void insert(float, int);
         int extract_min();
+        void decrease_key(int, float);
 };
 
 BinaryHeap::BinaryHeap(int new_maximum) { // O(V)
@@ -116,4 +103,10 @@ int BinaryHeap::extract_min() { // O(Log V)
 
         return root;
     }
+}
+
+void BinaryHeap::decrease_key(int position, float new_key) {
+    
+    heap_array[position].key = new_key;
+    heapify_up(position);
 }

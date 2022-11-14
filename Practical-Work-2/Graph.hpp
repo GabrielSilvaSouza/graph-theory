@@ -9,9 +9,9 @@ class Graph {
 
         Graph();
         void builder_adjacency_list(std::string);
+        void uniform_cost_search_array(int, int);
         void uniform_cost_search_heap(int, int);
-        void uniform_cost_search_array(int);
-        void prim_heap(int);
+        void find_mst_heap(int);
 };
 
 Graph::Graph() {
@@ -27,7 +27,7 @@ void Graph::builder_adjacency_list(std::string file_name) { // O(V+E)
 }
 
 
-void Graph::uniform_cost_search_array(int start_vertex) { // O(V**2)
+void Graph::uniform_cost_search_array(int start_vertex, int end_vertex) { // O(V**2)
     
     float* distance = new float[number_vertex]{};
     float* discovered = new float[number_vertex]{};
@@ -70,9 +70,11 @@ void Graph::uniform_cost_search_array(int start_vertex) { // O(V**2)
 
             adjancent_vertex = adjancent_vertex->next_node;
         }
+
+        if (next_vertex == end_vertex) {
+            break;
+        }
     }
-    
-    std::cout << distance[9] << ", " << distance[19] << ", " << distance[29] << ", " << distance[39] << ", " << distance[49]<< ", " << distance[59] << '\n';
 }
 
 void Graph::uniform_cost_search_heap(int start_vertex, int end_vertex) { // O((V+E)logV)
@@ -89,14 +91,13 @@ void Graph::uniform_cost_search_heap(int start_vertex, int end_vertex) { // O((V
 
     distance[start_vertex-1] = 0.0f;
     discovered.insert(0.0f, start_vertex);
-
+    
     for (int explored_set_size = 0; explored_set_size < number_vertex; explored_set_size++) {
         
         next_vertex = discovered.extract_min();
         adjancent_vertex = representation->linked_list_array[next_vertex-1].head;
 
         for (int i = 0; i < representation->linked_list_array[next_vertex-1].size; i++) {
-            
             if (adjancent_vertex->data_float < 0.0f) {
                 std::cout << "The library still doesn't implement shortest paths with negative weights.";
                 return;
@@ -108,23 +109,20 @@ void Graph::uniform_cost_search_heap(int start_vertex, int end_vertex) { // O((V
                 if (discovered.auxiliar_pointers[adjancent_vertex->data_int-1] == nullptr) {
                     discovered.insert(distance[adjancent_vertex->data_int-1], adjancent_vertex->data_int);
                 } else {
-                    discovered.auxiliar_pointers[adjancent_vertex->data_int-1]->key = distance[next_vertex-1] + adjancent_vertex->data_float;
-                    discovered.heapify_up(&*discovered.auxiliar_pointers[adjancent_vertex->data_int-1] - &discovered.heap_array[0]);
+                    discovered.decrease_key((&*discovered.auxiliar_pointers[adjancent_vertex->data_int-1] - &discovered.heap_array[0]), (distance[next_vertex-1] + adjancent_vertex->data_float));
                 }
             }
             
             adjancent_vertex = adjancent_vertex->next_node;
         }
 
-        if(next_vertex == end_vertex) {
+        if (next_vertex == end_vertex) {
             break;
         }
     }
-
-    std::cout << distance[9] << ", " << distance[19] << ", " << distance[29] << ", " << distance[39] << ", " << distance[49] << ", " << distance[59] << "\n";
 }
 
-void Graph::prim_heap(int start_vertex) {
+void Graph::find_mst_heap(int start_vertex) {
     
 
     float* distance = new float[number_vertex]{};
